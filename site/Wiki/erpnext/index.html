@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>ERPNext Wiki - Polaris Solutions Docs</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../css/extra.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "ERPNext Wiki";
+        var mkdocs_page_input_path = "Wiki/erpnext.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> Polaris Solutions Docs
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="" href="../../index.md">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../getting-started/">Getting Started</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../company-policies/">Company Policies</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../polaris-it-solutions-inc/">Polaris Overview</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="" href="../index.md">Wiki</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Polaris Solutions Docs</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">ERPNext Wiki</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="deploying-docker-containers">Deploying Docker containers</h1>
+<p>Step 1: Create the stack. Start with only the DB and volumes. Remove the health check and comment. Let the container run for 5 minutes. It should show “Waiting for Connection”.</p>
+<p>Step 2: Add all Redis, Configurator and Create-Site containers, and update the stack. Monitor the logs of Create-Site until installation has completed. Once done, the Create-Site and Configurator containers will both change status to Completed.</p>
+<p>Step 3: Copy and paste all stack config, and update the stack. Ensure to change the port. Monitor the stack. After 2 minutes, the site should be up, and reachable.</p>
+<pre><code class="language-plaintext">version: &quot;3&quot;
+
+services:
+  backend:
+    image: frappe/erpnext:v14.18.3
+    deploy:
+      restart_policy:
+        condition: on-failure
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+
+  configurator:
+    image: frappe/erpnext:v14.18.3
+    deploy:
+      restart_policy:
+        condition: none
+    entrypoint:
+      - bash
+      - -c
+    command:
+      - &gt;
+        ls -1 apps &gt; sites/apps.txt;
+        bench set-config -g db_host $$DB_HOST;
+        bench set-config -gp db_port $$DB_PORT;
+        bench set-config -g redis_cache &quot;redis://$$REDIS_CACHE&quot;;
+        bench set-config -g redis_queue &quot;redis://$$REDIS_QUEUE&quot;;
+        bench set-config -g redis_socketio &quot;redis://$$REDIS_SOCKETIO&quot;;
+        bench set-config -gp socketio_port $$SOCKETIO_PORT;
+    environment:
+      DB_HOST: db
+      DB_PORT: &quot;3306&quot;
+      REDIS_CACHE: redis-cache:6379
+      REDIS_QUEUE: redis-queue:6379
+      REDIS_SOCKETIO: redis-socketio:6379
+      SOCKETIO_PORT: &quot;9000&quot;
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+
+  create-site:
+    image: frappe/erpnext:v14.18.3
+    deploy:
+      restart_policy:
+        condition: none
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+    entrypoint:
+      - bash
+      - -c
+    command:
+      - &gt;
+        wait-for-it -t 120 db:3306;
+        wait-for-it -t 120 redis-cache:6379;
+        wait-for-it -t 120 redis-queue:6379;
+        wait-for-it -t 120 redis-socketio:6379;
+        export start=`date +%s`;
+        until [[ -n `grep -hs ^ sites/common_site_config.json | jq -r &quot;.db_host // empty&quot;` ]] &amp;&amp; \
+          [[ -n `grep -hs ^ sites/common_site_config.json | jq -r &quot;.redis_cache // empty&quot;` ]] &amp;&amp; \
+          [[ -n `grep -hs ^ sites/common_site_config.json | jq -r &quot;.redis_queue // empty&quot;` ]];
+        do
+          echo &quot;Waiting for sites/common_site_config.json to be created&quot;;
+          sleep 5;
+          if (( `date +%s`-start &gt; 120 )); then
+            echo &quot;could not find sites/common_site_config.json with required keys&quot;;
+            exit 1
+          fi
+        done;
+        echo &quot;sites/common_site_config.json found&quot;;
+        bench new-site frontend --no-mariadb-socket --admin-password=admin --db-root-password=admin --install-app erpnext --set-default;
+
+  db:
+    image: mariadb:10.6
+    healthcheck:
+      test: mysqladmin ping -h localhost --password=admin
+      interval: 1s
+      retries: 15
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+      - --skip-innodb-read-only-compressed # Temporary fix for MariaDB 10.6
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+    volumes:
+      - db-data:/var/lib/mysql
+
+  frontend:
+    image: frappe/erpnext:v14.18.3
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command:
+      - nginx-entrypoint.sh
+    environment:
+      BACKEND: backend:8000
+      FRAPPE_SITE_NAME_HEADER: frontend
+      SOCKETIO: websocket:9000
+      UPSTREAM_REAL_IP_ADDRESS: 127.0.0.1
+      UPSTREAM_REAL_IP_HEADER: X-Forwarded-For
+      UPSTREAM_REAL_IP_RECURSIVE: &quot;off&quot;
+      PROXY_READ_TIMOUT: 120
+      CLIENT_MAX_BODY_SIZE: 50m
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+    ports:
+      - &quot;9081:8080&quot;
+
+  queue-default:
+    image: frappe/erpnext:v14.18.3
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command:
+      - bench
+      - worker
+      - --queue
+      - default
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+
+  queue-long:
+    image: frappe/erpnext:v14.18.3
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command:
+      - bench
+      - worker
+      - --queue
+      - long
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+
+  queue-short:
+    image: frappe/erpnext:v14.18.3
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command:
+      - bench
+      - worker
+      - --queue
+      - short
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+
+  redis-queue:
+    image: redis:6.2-alpine
+    deploy:
+      restart_policy:
+        condition: on-failure
+    volumes:
+      - redis-queue-data:/data
+
+  redis-cache:
+    image: redis:6.2-alpine
+    deploy:
+      restart_policy:
+        condition: on-failure
+    volumes:
+      - redis-cache-data:/data
+
+  redis-socketio:
+    image: redis:6.2-alpine
+    deploy:
+      restart_policy:
+        condition: on-failure
+    volumes:
+      - redis-socketio-data:/data
+
+  scheduler:
+    image: frappe/erpnext:v14.18.3
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command:
+      - bench
+      - schedule
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+
+  websocket:
+    image: frappe/erpnext:v14.18.3
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command:
+      - node
+      - /home/frappe/frappe-bench/apps/frappe/socketio.js
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+
+volumes:
+  db-data:
+  redis-queue-data:
+  redis-cache-data:
+  redis-socketio-data:
+  sites:
+  logs:
+</code></pre>
+<h1 id="adding-apps-to-erpnext">Adding apps to ERPNext</h1>
+<h2 id="building-the-image">Building the image</h2>
+<p>git clone</p>
+<p>Set environment variables</p>
+<p>Docker build</p>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

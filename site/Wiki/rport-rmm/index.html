@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>RPort RMM Wiki - Polaris Solutions Docs</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../css/extra.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "RPort RMM Wiki";
+        var mkdocs_page_input_path = "Wiki/rport-rmm.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> Polaris Solutions Docs
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="" href="../../index.md">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../getting-started/">Getting Started</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../company-policies/">Company Policies</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../polaris-it-solutions-inc/">Polaris Overview</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="" href="../index.md">Wiki</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Polaris Solutions Docs</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">RPort RMM Wiki</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="introduction">Introduction</h1>
+<h1 id="web-interface">Web Interface</h1>
+<h1 id="adding-clients">Adding Clients</h1>
+<h2 id="client-access-token">Client Access Token</h2>
+<h2 id="desktop-setup-configuration">Desktop Setup &amp; Configuration</h2>
+<h3 id="installing-rport">Installing RPort</h3>
+<h4 id="automated-install-with-pairing-code-windows">Automated install with pairing code - Windows</h4>
+<ol>
+<li>Login to the RPort RMM web page.</li>
+<li>Click Profile button on the left access menu (looks like a cog)</li>
+<li>Click Client Access</li>
+<li>Find the customer / group client access ID that you intend to install RPort on, and click the 3 dots and click on Install client</li>
+<li>Click COPY TO CLIPBOARD next to Windows to select the PowerShell script</li>
+<li>On the client PC, click the Start menu, and type PowerShell. Right click the option and select Run as Administrator</li>
+<li>Paste the PowerShell script and press enter</li>
+<li>Read the screen output to ensure that installation was successful</li>
+</ol>
+<p>Step 5 - Copy the PowerShell script, paste and execute on client PC</p>
+<h4 id="automated-install-with-pairing-code-linux">Automated install with pairing code - Linux</h4>
+<h4 id="manual-install-windows">Manual install - Windows</h4>
+<ol>
+<li>Download and run the RPort installer: <a href="https://downloads.rport.io/rport/stable/latest.php?arch=Windows_x86_64">https://downloads.rport.io/rport/stable/latest.php?arch=Windows_x86_64</a></li>
+<li>Copy the client config file from the below Additional Resources section to "C:\Program Files\rport" folder</li>
+<li>Click start and type cmd, right click "Command Prompt" and run as administrator</li>
+<li>Paste this line: cd "C:\Program Files\rport"</li>
+<li>Paste this line: rport.exe --service install -c rport.conf and confirm that the client appears on the RPort dashboard</li>
+<li>Paste this line: sc query rport. Read the output to confirm success</li>
+<li>Paste this line: sc start rport. Read the output to confirm success</li>
+<li>Login to the RPort server and check under Kaesim that the client has successfully registered</li>
+</ol>
+<h4 id="manual-install-linux">Manual install - Linux</h4>
+<h4 id="manual-install-macos">Manual install - MacOS</h4>
+<h3 id="installing-tightvnc-windows">Installing TightVNC - Windows</h3>
+<h3 id="installing-tightvnc-linux">Installing TightVNC - Linux</h3>
+<h3 id="installing-tightvnc-macos">Installing TightVNC - MacOS</h3>
+<h1 id="remote-control-pcs">Remote Control PC's</h1>
+<h1 id="remote-script-execution">Remote Script Execution</h1>
+<h1 id="additional-features">Additional Features</h1>
+<h2 id="documentation">Documentation</h2>
+<h2 id="audit">Audit</h2>
+<h2 id="meta-data">Meta Data</h2>
+<h1 id="administration">Administration</h1>
+<h2 id="adding-users-groups">Adding Users &amp; Groups</h2>
+<h2 id="adding-client-groups">Adding Client Groups</h2>
+<h2 id="creating-client-access-tokens">Creating Client Access Tokens</h2>
+<h2 id="additional-resources">Additional Resources</h2>
+<p>Kaesim Cybersecurity Config file <a href="/rport.conf">/rport.conf</a></p>
+<p>Koruna Assist Config file <a href="/rport.conf">/rport.conf</a></p>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

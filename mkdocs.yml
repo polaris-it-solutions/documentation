@@ -1,0 +1,13 @@
+site_name: Polaris Solutions Docs
+theme:
+  name: readthedocs
+  custom_dir: overrides
+
+extra_css:
+  - css/extra.css
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Company Policies: company-policies.md
+  - Polaris Overview: polaris-it-solutions-inc.md
+  - Wiki: Wiki/index.md
