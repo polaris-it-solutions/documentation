@@ -1,5 +1,4 @@
 ---
-layout: default
 title: Home
 ---
 # Welcome to Polaris Documentation
