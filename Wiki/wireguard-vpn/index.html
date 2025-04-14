@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Wireguard VPN - Polaris Solutions Docs</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Wireguard VPN";
+        var mkdocs_page_input_path = "Wiki/wireguard-vpn.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> Polaris Solutions Docs
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../getting-started/">Getting Started</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../company-policies/">Company Policies</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../polaris-it-solutions-inc/">Polaris Overview</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="" href="../index.md">Wiki</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Polaris Solutions Docs</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Wireguard VPN</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="introduction">Introduction</h1>
+<p>Wireguard VPN is used for clients who need to access websites that are geo-locked. Currently Polaris Solutions IT Consultancy has 2 VPN servers. One terminating in Australia, and one terminating in Singapore. Initial plan was to have all staff using Wireguard VPN to protect data and add anonymity. Future plan is to transition to Secure DNS, hosted in Singapore. The Australia VPN service will remain for those staff who need access to Austraila based geo-blocked websites.</p>
+<h1 id="server-installation">Server Installation</h1>
+<h2 id="overview-current-infrastructure">Overview: Current Infrastructure</h2>
+<p>AWS provided network segments</p>
+<h2 id="part-1-prerequisites">Part 1: Prerequisites</h2>
+<pre><code class="language-plaintext">sudo apt update &amp;&amp; sudo apt upgrade -y &amp;&amp; sudo apt install ufw wireguard -y #Install the wireguard and firewall packages
+sudo ufw allow ssh &amp;&amp; sudo ufw allow 51820/udp &amp;&amp; sudo ufw allow 51822/udp &amp;&amp; sudo ufw enable #Enable and allow Wireguard ports
+sudo sysctl -w net.ipv4.ip_forward=1 &amp;&amp; sudo sysctl -p /etc/sysctl.conf #Allows traffic forwarding
+sudo su #Change to root user
+cd /etc/wireguard/ &amp;&amp; umask 077 &amp;&amp; wg genkey | tee privatekey | wg pubkey &gt; publickey #Generate private and public keys
+cat privatekey &amp;&amp; cat publickey #Note the private and public key
+nano /etc/wireguard/wg2.conf
+</code></pre>
+<h3 id="notes">Notes</h3>
+<ol>
+<li>The private key should not be shared, and is only used in the server config of the wg interface</li>
+<li>The server public key is used on the client side to authenticate the client to the server associated to the port number.</li>
+<li>Each client must have their own wg config file, and thus their own Listen Port. Refer to the Cheat Sheet for more info.</li>
+<li>Decide on a network segment for the new profile being created. Subnet calculator can be found <a href="https://www.calculator.net/ip-subnet-calculator.html">here.</a></li>
+</ol>
+<h3 id="cheat-sheet">Cheat sheet</h3>
+<table>
+<thead>
+<tr>
+<th>Server IP</th>
+<th>Interface</th>
+<th>Entity using</th>
+<th>Port Number</th>
+<th>IP Subnet</th>
+<th>Public Key</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>18.139.67.154</td>
+<td>wg0</td>
+<td>WBHS Group Servers</td>
+<td>51820</td>
+<td>172.31.33.1/25</td>
+<td>N8JhuYZ6vSU2qHU+B0w9l8oW9rKQDKIsmjBV05aavSI=</td>
+</tr>
+<tr>
+<td>18.139.67.154</td>
+<td>wg1</td>
+<td>WBHS Group Employees</td>
+<td>51821</td>
+<td>172.31.33.1/25</td>
+<td>N8JhuYZ6vSU2qHU+B0w9l8oW9rKQDKIsmjBV05aavSI=</td>
+</tr>
+<tr>
+<td>18.139.67.154</td>
+<td>wg2</td>
+<td>Koruna Assist</td>
+<td>51822</td>
+<td>172.31.35.1/24</td>
+<td>N8JhuYZ6vSU2qHU+B0w9l8oW9rKQDKIsmjBV05aavSI=</td>
+</tr>
+<tr>
+<td>18.139.67.154</td>
+<td>wg3</td>
+<td>Kaesim Cybersecurity</td>
+<td>51823</td>
+<td>172.31.36.1/24</td>
+<td>N8JhuYZ6vSU2qHU+B0w9l8oW9rKQDKIsmjBV05aavSI=</td>
+</tr>
+<tr>
+<td>13.239.127.37</td>
+<td>wg2</td>
+<td>Koruna Assist</td>
+<td>51822</td>
+<td>172.31.24.1/24</td>
+<td>saHlWMKUAmb1/Ovx+p68mWinSevsA59QWg7zPb6kHE4=</td>
+</tr>
+</tbody>
+</table>
+<h2 id="part-2-vpn-profiles-config-files">Part 2: VPN Profiles - Config Files</h2>
+<h3 id="singapore">Singapore</h3>
+<h4 id="wg0-wbhs-group-servers">wg0: WBHS Group Servers</h4>
+<pre><code class="language-plaintext">root@ip-172-31-39-3:/home/ubuntu# cat /etc/wireguard/wg0.conf
+## WBHS Group Servers ##
+[Interface]
+PrivateKey = aBjBoLGIuYXqiS7ifTbQ8PNe6pzVflYLK095ugL2OGA=
+Address = 172.31.33.1/25
+PostUp = ufw route allow in on wg0 out on ens5
+PostUp = iptables -t nat -I POSTROUTING -o ens5 -j MASQUERADE
+PreDown = ufw route delete allow in on wg0 out on ens5
+PreDown = iptables -t nat -D POSTROUTING -o ens5 -j MASQUERADE
+ListenPort = 51820
+
+## William Asus ##
+[Peer]
+PublicKey = Z2eBbA4R/dNh0G+kyGVYO8VkprL5sa+Tl9MQTae4BC0=
+AllowedIPs = 172.31.33.5/32
+</code></pre>
+<h4 id="wg1-wbhs-group-employees">wg1: WBHS Group Employees</h4>
+<pre><code class="language-plaintext">root@ip-172-31-39-3:/home/ubuntu# cat /etc/wireguard/wg1.conf
+################
+## WBHS Group ##
+################
+[Interface]
+PrivateKey = aBjBoLGIuYXqiS7ifTbQ8PNe6pzVflYLK095ugL2OGA=
+Address = 172.31.33.1/25
+PostUp = ufw route allow in on wg0 out on ens5
+PostUp = iptables -t nat -I POSTROUTING -o ens5 -j MASQUERADE
+PreDown = ufw route delete allow in on wg0 out on ens5
+PreDown = iptables -t nat -D POSTROUTING -o ens5 -j MASQUERADE
+ListenPort = 51821
+
+[Peer]
+PublicKey = QI/nG/PNyCmKNKGlcd4vxkrzJlGQ9OnwSKgwMblGqBA=
+AllowedIPs = 172.31.33.2/32
+</code></pre>
+<h4 id="wg2-koruna-assist">wg2: Koruna Assist</h4>
+<pre><code class="language-plaintext">###################
+## Koruna Assist ##
+###################
+[Interface]
+PrivateKey = aBjBoLGIuYXqiS7ifTbQ8PNe6pzVflYLK095ugL2OGA=
+Address = 172.31.35.1/24
+PostUp = ufw route allow in on wg2 out on ens5
+PostUp = iptables -t nat -I POSTROUTING -o ens5 -j MASQUERADE
+PreDown = ufw route delete allow in on wg2 out on ens5
+PreDown = iptables -t nat -D POSTROUTING -o ens5 -j MASQUERADE
+ListenPort = 51822
+
+[Peer]
+PublicKey = +O4J5vJB4abyRHlAJFfWZ2ckB4SimcuVTJZ8LaKUTg8=
+AllowedIPs = 172.31.35.11/32
+</code></pre>
+<h4 id="wg3-kaesim-cybersecurity">wg3: Kaesim Cybersecurity</h4>
+<pre><code class="language-plaintext">###########################
+## Kaesim Cyber Security ##
+###########################
+[Interface]
+PrivateKey = aBjBoLGIuYXqiS7ifTbQ8PNe6pzVflYLK095ugL2OGA=
+Address = 172.31.36.1/24
+PostUp = ufw route allow in on wg3 out on ens5
+PostUp = iptables -t nat -I POSTROUTING -o ens5 -j MASQUERADE
+PreDown = ufw route delete allow in on wg3 out on ens5
+PreDown = iptables -t nat -D POSTROUTING -o ens5 -j MASQUERADE
+ListenPort = 51823
+
+
+## Gabi ##
+[Peer]
+PublicKey = YbL29Qo35FUduOoUUGHsKWxpwrG3m6LGP7BDRXS7QGw=
+AllowedIPs = 172.31.36.11/32
+</code></pre>
+<h3 id="australia">Australia</h3>
+<h4 id="wg2-koruna-assist_1">wg2: Koruna Assist</h4>
+<pre><code class="language-plaintext">root@ip-172-31-22-132:/home/ubuntu# cat /etc/wireguard/wg2.conf 
+###################
+## Koruna Assist ##
+###################
+[Interface]
+PrivateKey = wEThIL/bIb7k/skZJu2ltFeyjaQbRUv8p8sDrk9OGX0=
+Address = 172.31.24.1/24
+PostUp = ufw route allow in on wg2 out on ens5
+PostUp = iptables -t nat -I POSTROUTING -o ens5 -j MASQUERADE
+PreDown = ufw route delete allow in on wg2 out on ens5
+PreDown = iptables -t nat -D POSTROUTING -o ens5 -j MASQUERADE
+ListenPort = 51822
+
+
+## Andreana Del Milana ##
+[Peer]
+PublicKey = usS3M5SHMrd2GgkltFk3WWJ8McR5yBa8pJcQcnUOUAA=
+AllowedIPs = 172.31.24.11/32
+</code></pre>
+<h3 id="notes_1">Notes</h3>
+<p>Comment every new wg config file to indicate the purpose. Also, comment every profile to indicate the user </p>
+<h1 id="client-installation">Client Installation</h1>
+<h2 id="windows-clients">Windows Clients</h2>
+<p><a href="https://download.wireguard.com/windows-client/wireguard-installer.exe">Windows Installer</a></p>
+<ol>
+<li>Run the installation, making sure to run the as a service.</li>
+<li>Click Create new empty tunnel</li>
+</ol>
+<p>Configuring VPN Tunnel</p>
+<h3 id="base-client-config">Base client config</h3>
+<pre><code class="language-plaintext">Address = xxx.xxx.xxx.xxx/xx
+DNS = 1.1.1.1
+
+[Peer]
+PublicKey = //**SERVER-PUBLIC-KEY**//
+AllowedIPs = 0.0.0.0/0
+Endpoint = xxx.xxx.xxx.xxx:518xx 
+</code></pre>
+<ul>
+<li>Address corresponds to Client subnet</li>
+<li>Endpoint refers to the Server the Client will connect to. The port will correspond to the Client VPN profile</li>
+</ul>
+<h2 id="linux-clients">Linux Clients</h2>
+<p>Linux clients should be done via config file.</p>
+<h2 id="server-side-client-addition">Server Side Client Addition</h2>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
